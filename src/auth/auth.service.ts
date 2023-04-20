@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -22,6 +23,27 @@ export class AuthService {
     this.usersService.update(userId, { hashedRt: null });
   }
 
+  async refresh(userId: number, rt: string) {
+    const user = await this.usersService.findOne(userId);
+
+    if (!user) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const rtMatches = await bcrypt.compare(rt, user.hashedRt);
+
+    if (!rtMatches) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const tokens = await this.createTokens(user.id, user.email);
+
+    const hashedRt = await this.hashData(tokens.refresh_token);
+    this.usersService.update(user.id, { hashedRt });
+
+    return tokens;
+  }
+
   async singup(email: string, password: string): Promise<TokensInterface> {
     const users = await this.usersService.find(email);
 
@@ -30,7 +52,7 @@ export class AuthService {
     }
 
     const hashedPassword = await this.hashData(password);
-    const user = this.usersService.create(email, hashedPassword);
+    const user = await this.usersService.create(email, hashedPassword);
 
     const tokens = await this.createTokens(user.id, user.email);
 

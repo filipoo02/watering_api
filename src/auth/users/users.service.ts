@@ -8,14 +8,14 @@ import { User } from 'src/auth/users/user.entity';
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  create(email: string, password: string) {
+  async create(email: string, password: string) {
     const user = this.repo.create({
       email,
       password,
       createdAt: new Date().toISOString(),
     });
 
-    this.repo.save(user);
+    await this.repo.save(user);
 
     return user;
   }

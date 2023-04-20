@@ -3,8 +3,9 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { AuthController } from './auth.controller';
 import { User } from './users/user.entity';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
@@ -21,7 +22,7 @@ import { RtStrategy } from './rt.strategy';
         return {
           global: true,
           secret: config.get<string>('JWT_SECRET'),
-          signOptions: { expiresIn: 3600 },
+          signOptions: { expiresIn: '15m' },
         };
       },
     }),
