@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -13,12 +12,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { StrategyNameEnum } from './types/strategy-name.enum';
-import { TokensInterface } from './types/tokens.interface';
 import { User } from './users/user.entity';
 import { JwtPayloadInterface } from './types/jwt-payload.interface';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { RefreshToken } from 'src/decorators/refresh-token.decorator';
 import { Public } from 'src/decorators/public.decorator';
+import { AuthCredentialsInterface } from './types/auth-credentials.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -27,15 +26,14 @@ export class AuthController {
   @Public()
   @Post('/signup')
   @HttpCode(HttpStatus.CREATED)
-  async signup(@Body() body: AuthCredentialsDto) {
-    const user = await this.authService.singup(body.email, body.password);
-    return user;
+  signup(@Body() body: AuthCredentialsDto): Promise<AuthCredentialsInterface> {
+    return this.authService.singup(body.email, body.password);
   }
 
   @Public()
   @Post('/signin')
   @HttpCode(HttpStatus.OK)
-  singin(@Body() body: AuthCredentialsDto): Promise<TokensInterface> {
+  singin(@Body() body: AuthCredentialsDto): Promise<AuthCredentialsInterface> {
     return this.authService.singin(body.email, body.password);
   }
 
@@ -56,7 +54,6 @@ export class AuthController {
     return this.authService.refresh(payload.userId, rt);
   }
 
-  @UseGuards(AuthGuard(StrategyNameEnum.JWT_AT))
   @Get('/whoami')
   currentUser(@CurrentUser() user: User) {
     return user;

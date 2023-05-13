@@ -8,6 +8,8 @@ import { AppService } from './app.service';
 import { User } from './auth/users/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { AccessTokenGuard } from './guards/access-token.guard';
+import { DeviceModule } from './device/device.module';
+import { Device } from './device/device.entity';
 
 @Module({
   imports: [
@@ -20,13 +22,14 @@ import { AccessTokenGuard } from './guards/access-token.guard';
       useFactory: (config: ConfigService) => {
         return {
           type: 'sqlite',
-          entities: [User],
+          entities: [User, Device],
           synchronize: true,
           database: config.get<string>('DB_NAME'),
         };
       },
     }),
     AuthModule,
+    DeviceModule,
   ],
   controllers: [AppController],
   providers: [

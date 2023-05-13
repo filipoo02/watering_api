@@ -10,6 +10,8 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/auth/users/users.service';
 import { JwtPayloadInterface } from './types/jwt-payload.interface';
 import { TokensInterface } from './types/tokens.interface';
+import { AuthCredentialsInterface } from './types/auth-credentials.interface';
+import { AuthCredentialModel } from './models/auth-credential.model';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +28,7 @@ export class AuthService {
   async refresh(userId: number, rt: string) {
     const user = await this.usersService.findOne(userId);
 
-    if (!user) {
+    if (!user || !user.hashedRt) {
       throw new ForbiddenException('Access denied');
     }
 
@@ -44,7 +46,10 @@ export class AuthService {
     return tokens;
   }
 
-  async singup(email: string, password: string): Promise<TokensInterface> {
+  async singup(
+    email: string,
+    password: string,
+  ): Promise<AuthCredentialsInterface> {
     const users = await this.usersService.find(email);
 
     if (users.length) {
@@ -59,10 +64,13 @@ export class AuthService {
     const hashedRt = await this.hashData(tokens.refresh_token);
     this.usersService.update(user.id, { hashedRt });
 
-    return tokens;
+    return AuthCredentialModel.create(tokens, user);
   }
 
-  async singin(email: string, password: string): Promise<TokensInterface> {
+  async singin(
+    email: string,
+    password: string,
+  ): Promise<AuthCredentialsInterface> {
     const [user] = await this.usersService.find(email);
 
     if (!user) {
@@ -78,7 +86,7 @@ export class AuthService {
     const hashedRt = await this.hashData(tokens.refresh_token);
     this.usersService.update(user.id, { hashedRt });
 
-    return tokens;
+    return AuthCredentialModel.create(tokens, user);
   }
 
   private async createTokens(

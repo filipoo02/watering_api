@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Device } from 'src/device/device.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class User {
@@ -19,6 +20,12 @@ export class User {
 
   @Column({ nullable: true })
   verifiedAt: Date;
+
+  @ManyToOne((type) => Device, (type) => type.users, {
+    eager: false,
+    nullable: true,
+  })
+  device: Device;
 
   //   @Column({ type: 'boolean' })
   //   active: boolean;
