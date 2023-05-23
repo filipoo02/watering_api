@@ -14,6 +14,12 @@ export class Device {
   @Column({ nullable: true })
   address: string;
 
+  @Column({ nullable: true })
+  description: string;
+
+  @Column()
+  name: string;
+
   @Column()
   active: boolean;
 

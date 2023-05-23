@@ -10,26 +10,31 @@ import { AuthModule } from './auth/auth.module';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { DeviceModule } from './device/device.module';
 import { Device } from './device/device.entity';
+import { DatabaseProviderModule } from './database/database-provider.module';
+import { TasksModule } from './tasks/tasks.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import * as path from 'path';
+import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 
 @Module({
   imports: [
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [AcceptLanguageResolver],
+    }),
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          type: 'sqlite',
-          entities: [User, Device],
-          synchronize: true,
-          database: config.get<string>('DB_NAME'),
-        };
-      },
-    }),
+    DatabaseProviderModule,
     AuthModule,
     DeviceModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [

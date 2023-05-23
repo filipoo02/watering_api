@@ -11,6 +11,7 @@ import { User } from 'src/auth/users/user.entity';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { DeviceCredentialsInterface } from './types/device-credentials.interface';
+import {CreateDeviceDto} from './dtos/create-device.dto';
 
 @Injectable()
 export class DeviceService {
@@ -34,7 +35,7 @@ export class DeviceService {
     return this.repo.save(storedDevice);
   }
 
-  async create(user: User): Promise<DeviceCredentialsInterface> {
+  async create(user: User, data: CreateDeviceDto): Promise<DeviceCredentialsInterface> {
     if (!user) {
       throw new BadRequestException('The device must be create by the user');
     }
@@ -42,6 +43,8 @@ export class DeviceService {
     const device = this.repo.create({
       users: [user],
       active: false,
+      name: data.name,
+      description: data.description,
     });
 
     const { id } = await this.repo.save(device);

@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { I18n, I18nContext } from 'nestjs-i18n';
 
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
@@ -26,15 +27,21 @@ export class AuthController {
   @Public()
   @Post('/signup')
   @HttpCode(HttpStatus.CREATED)
-  signup(@Body() body: AuthCredentialsDto): Promise<AuthCredentialsInterface> {
-    return this.authService.singup(body.email, body.password);
+  signup(
+    @Body() body: AuthCredentialsDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<AuthCredentialsInterface> {
+    return this.authService.singup(body.email, body.password, i18n.lang);
   }
 
   @Public()
   @Post('/signin')
   @HttpCode(HttpStatus.OK)
-  singin(@Body() body: AuthCredentialsDto): Promise<AuthCredentialsInterface> {
-    return this.authService.singin(body.email, body.password);
+  singin(
+    @Body() body: AuthCredentialsDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<AuthCredentialsInterface> {
+    return this.authService.singin(body.email, body.password, i18n.lang);
   }
 
   @Post('/logout')
@@ -50,8 +57,9 @@ export class AuthController {
   refreshToken(
     @CurrentUser() payload: JwtPayloadInterface,
     @RefreshToken() rt: string,
+    @I18n() i18n: I18nContext,
   ) {
-    return this.authService.refresh(payload.userId, rt);
+    return this.authService.refresh(payload.userId, rt, i18n.lang);
   }
 
   @Get('/whoami')

@@ -1,6 +1,10 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateDeviceDto {
   @IsString()
-  address: string;
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  description: string;
 }

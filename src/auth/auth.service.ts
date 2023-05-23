@@ -7,6 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { I18nService } from 'nestjs-i18n';
+
 import { UsersService } from 'src/auth/users/users.service';
 import { JwtPayloadInterface } from './types/jwt-payload.interface';
 import { TokensInterface } from './types/tokens.interface';
@@ -19,23 +21,28 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private i18n: I18nService,
   ) {}
 
   logout(userId: number) {
     this.usersService.update(userId, { hashedRt: null });
   }
 
-  async refresh(userId: number, rt: string) {
+  async refresh(userId: number, rt: string, lang: string) {
     const user = await this.usersService.findOne(userId);
 
     if (!user || !user.hashedRt) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException(
+        this.i18n.translate('auth.errors.access_denied', { lang }),
+      );
     }
 
     const rtMatches = await bcrypt.compare(rt, user.hashedRt);
 
     if (!rtMatches) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException(
+        this.i18n.translate('auth.errors.access_denied', { lang }),
+      );
     }
 
     const tokens = await this.createTokens(user.id, user.email);
@@ -49,11 +56,14 @@ export class AuthService {
   async singup(
     email: string,
     password: string,
+    lang: string,
   ): Promise<AuthCredentialsInterface> {
     const users = await this.usersService.find(email);
 
     if (users.length) {
-      throw new BadRequestException('Email address is used');
+      throw new BadRequestException(
+        this.i18n.translate('auth.errors.email_in_use', { lang }),
+      );
     }
 
     const hashedPassword = await this.hashData(password);
@@ -62,7 +72,7 @@ export class AuthService {
     const tokens = await this.createTokens(user.id, user.email);
 
     const hashedRt = await this.hashData(tokens.refresh_token);
-    this.usersService.update(user.id, { hashedRt });
+    await this.usersService.update(user.id, { hashedRt });
 
     return AuthCredentialModel.create(tokens, user);
   }
@@ -70,15 +80,20 @@ export class AuthService {
   async singin(
     email: string,
     password: string,
+    lang: string,
   ): Promise<AuthCredentialsInterface> {
     const [user] = await this.usersService.find(email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        this.i18n.translate('auth.errors.invalid_credentials', { lang }),
+      );
     }
 
     if (!(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        this.i18n.translate('auth.errors.invalid_credentials', { lang }),
+      );
     }
 
     const tokens = await this.createTokens(user.id, user.email);
@@ -117,8 +132,6 @@ export class AuthService {
 
   async hashData(data: string): Promise<string> {
     const salt = await bcrypt.genSalt();
-    const result = await bcrypt.hash(data, salt);
-
-    return result;
+    return await bcrypt.hash(data, salt);
   }
 }
