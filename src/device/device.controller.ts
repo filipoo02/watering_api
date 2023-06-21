@@ -27,8 +27,8 @@ export class DeviceController {
   }
 
   @Get()
-  getDevice(@CurrentUser() user: User): Promise<Device> {
-    return this.deviceService.getUserDevice(user);
+  getDevices(@CurrentUser() user: User): Promise<Device[]> {
+    return this.deviceService.getUserDevices(user);
   }
 
   @Patch()

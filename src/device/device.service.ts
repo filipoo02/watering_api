@@ -32,10 +32,15 @@ export class DeviceService {
       storedDevice.address = device.address;
     }
 
+    storedDevice.updatedAt = new Date().toISOString();
+
     return this.repo.save(storedDevice);
   }
 
-  async create(user: User, data: CreateDeviceDto): Promise<DeviceCredentialsInterface> {
+  async create(
+    user: User,
+    data: CreateDeviceDto,
+  ): Promise<Device & { id: string }> {
     if (!user) {
       throw new BadRequestException('The device must be create by the user');
     }
@@ -45,17 +50,15 @@ export class DeviceService {
       active: false,
       name: data.name,
       description: data.description,
+      createdAt: new Date().toISOString(),
     });
 
     const { id } = await this.repo.save(device);
 
-    return { id };
+    return { ...device, id };
   }
 
-  async registerDevice({
-    id,
-    address,
-  }: DeviceCredentialsInterface & { address: string }) {
+  async registerDevice({ id, address }: { id: string; address: string }) {
     const device = await this.findOne(id);
 
     if (!device) {
@@ -79,12 +82,12 @@ export class DeviceService {
     return this.repo.findOneBy({ id, active: true });
   }
 
-  getUserDevice(user: User): Promise<Device> {
+  getUserDevices(user: User): Promise<Device[]> {
     if (!user) {
       return null;
     }
 
-    return this.repo.findOneBy({ users: [user] });
+    return this.repo.findBy({ users: [user] });
   }
 
   async assignUser(user: User, id: string): Promise<Device> {

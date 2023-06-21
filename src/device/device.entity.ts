@@ -1,10 +1,5 @@
 import { User } from 'src/auth/users/user.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Device {
@@ -28,4 +23,10 @@ export class Device {
     nullable: true,
   })
   users: User[];
+
+  @Column()
+  createdAt: string;
+
+  @Column({ nullable: true })
+  updatedAt: string;
 }
