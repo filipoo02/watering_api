@@ -1,0 +1,7 @@
+{
+  "errors": {
+    "not-found": "Nie znaleziono urządzenia o podanym id",
+    "name-required": "Nazwa jest wymagana",
+    "already-registered": "Urządzenie już jest zarejestrowane"
+  }
+}

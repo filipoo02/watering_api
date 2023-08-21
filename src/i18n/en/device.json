@@ -1,0 +1,10 @@
+{
+    "errors": {
+        "not-found": "No device with given id found",
+        "name-required": "The name property is required",
+        "already-registered": "Device is registered"
+    },
+    "messages": {
+        "updated": "Device has been updated"
+    }
+}

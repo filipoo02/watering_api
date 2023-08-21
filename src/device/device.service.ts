@@ -2,29 +2,30 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Device } from './device.entity';
 import { User } from 'src/auth/users/user.entity';
-import { randomUUID } from 'crypto';
-import * as bcrypt from 'bcrypt';
-import { DeviceCredentialsInterface } from './types/device-credentials.interface';
-import {CreateDeviceDto} from './dtos/create-device.dto';
+import { CreateDeviceDto } from './dtos/create-device.dto';
+
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class DeviceService {
-  constructor(@InjectRepository(Device) private repo: Repository<Device>) {}
+  constructor(
+    @InjectRepository(Device) private repo: Repository<Device>,
+    private i18n: I18nService,
+  ) {}
 
-  async update(id: string, device: Partial<Device>): Promise<Device> {
-    const storedDevice = await this.findOne(id);
+  async update(
+    id: string,
+    device: Partial<Device>,
+    lang: string,
+  ): Promise<Device> {
+    const storedDevice = await this.findOne(id, lang);
 
-    if (!storedDevice) {
-      throw new NotFoundException('Device not found');
-    }
-
-    if (device.users.length) {
+    if (device.users?.length) {
       device.users.forEach((u) => storedDevice.users.push(u));
     }
 
@@ -32,9 +33,17 @@ export class DeviceService {
       storedDevice.address = device.address;
     }
 
-    storedDevice.updatedAt = new Date().toISOString();
+    if (device.description) {
+      storedDevice.description = device.description;
+    }
 
-    return this.repo.save(storedDevice);
+    if (device.name) {
+      storedDevice.name = device.name;
+    }
+
+    storedDevice.updatedAt = new Date().toISOString();
+    await this.repo.save(storedDevice);
+    return;
   }
 
   async create(
@@ -58,15 +67,21 @@ export class DeviceService {
     return { ...device, id };
   }
 
-  async registerDevice({ id, address }: { id: string; address: string }) {
-    const device = await this.findOne(id);
-
-    if (!device) {
-      throw new NotFoundException('Device not found');
-    }
+  async registerDevice({
+    id,
+    address,
+    lang,
+  }: {
+    id: string;
+    address: string;
+    lang: string;
+  }) {
+    const device = await this.findOne(id, lang);
 
     if (device.active) {
-      throw new BadRequestException('Device is registered');
+      throw new BadRequestException(
+        this.i18n.translate('device.errors.already-registered', { lang }),
+      );
     }
 
     Object.assign(device, { address, active: true });
@@ -74,12 +89,20 @@ export class DeviceService {
     return this.repo.save(device);
   }
 
-  findOne(id: string): Promise<Device> {
+  async findOne(id: string, lang: string): Promise<Device> {
     if (!id) {
       return null;
     }
 
-    return this.repo.findOneBy({ id, active: true });
+    const device = await this.repo.findOneBy({ id });
+
+    if (!device) {
+      throw new NotFoundException(
+        this.i18n.translate('device.errors.not-found', { lang }),
+      );
+    }
+
+    return device;
   }
 
   getUserDevices(user: User): Promise<Device[]> {

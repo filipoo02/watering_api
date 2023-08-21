@@ -5,11 +5,9 @@ import { APP_GUARD } from '@nestjs/core';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { User } from './auth/users/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { DeviceModule } from './device/device.module';
-import { Device } from './device/device.entity';
 import { DatabaseProviderModule } from './database/database-provider.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
