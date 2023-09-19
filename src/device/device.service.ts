@@ -1,7 +1,7 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
+  BadRequestException, HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,6 +10,9 @@ import { User } from 'src/auth/users/user.entity';
 import { CreateDeviceDto } from './dtos/create-device.dto';
 
 import { I18nService } from 'nestjs-i18n';
+import {ResponseInterface} from "../shared/types/response.interface";
+import {EnumsResponse} from "../shared/types/enums";
+import {DEVICES} from "./constants/devices";
 
 @Injectable()
 export class DeviceService {
@@ -20,10 +23,9 @@ export class DeviceService {
 
   async update(
     id: string,
-    device: Partial<Device>,
-    lang: string,
+    device: Partial<Device>
   ): Promise<Device> {
-    const storedDevice = await this.findOne(id, lang);
+    const storedDevice = await this.findOne(id);
 
     if (device.users?.length) {
       device.users.forEach((u) => storedDevice.users.push(u));
@@ -70,18 +72,14 @@ export class DeviceService {
   async registerDevice({
     id,
     address,
-    lang,
   }: {
     id: string;
     address: string;
-    lang: string;
   }) {
-    const device = await this.findOne(id, lang);
+    const device = await this.findOne(id);
 
     if (device.active) {
-      throw new BadRequestException(
-        this.i18n.translate('device.errors.already-registered', { lang }),
-      );
+      throw new BadRequestException(this.i18n.translate('device.errors.already-registered'));
     }
 
     Object.assign(device, { address, active: true });
@@ -89,7 +87,7 @@ export class DeviceService {
     return this.repo.save(device);
   }
 
-  async findOne(id: string, lang: string): Promise<Device> {
+  async findOne(id: string): Promise<Device> {
     if (!id) {
       return null;
     }
@@ -97,20 +95,24 @@ export class DeviceService {
     const device = await this.repo.findOneBy({ id });
 
     if (!device) {
-      throw new NotFoundException(
-        this.i18n.translate('device.errors.not-found', { lang }),
-      );
+      throw new NotFoundException(this.i18n.translate('device.errors.not-found'));
     }
 
     return device;
   }
 
-  getUserDevices(user: User): Promise<Device[]> {
+  async getUserDevices(user: User): Promise<ResponseInterface<Device[]>> {
     if (!user) {
       return null;
     }
 
-    return this.repo.findBy({ users: [user] });
+    const devices = await this.repo.findBy({ users: [user] });
+
+    return {
+      message: '',
+      statusCode: HttpStatus.OK,
+      data: devices,
+    }
   }
 
   async assignUser(user: User, id: string): Promise<Device> {
@@ -127,5 +129,20 @@ export class DeviceService {
     device.users.push(user);
 
     return this.repo.save(device);
+  }
+
+  getEnums(): ResponseInterface<EnumsResponse> {
+    return {
+      data: {
+        devices: DEVICES,
+      },
+      message: '',
+      statusCode: HttpStatus.OK
+    }
+  }
+
+  async configurationChanged(device: Device): Promise<void> {
+    device.lastConfigurationDate = new Date().toISOString();
+    await this.repo.save(device);
   }
 }

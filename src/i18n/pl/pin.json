@@ -1,0 +1,16 @@
+{
+  "enums": {
+    "electrical_contact": {
+      "0": "Normalnie otwarty",
+      "1": "Normalnie zamknięty"
+    }
+  },
+  "errors": {
+    "bad_device_type": "Brak dostępnych pinów",
+    "not_found": "Nie znaleziono urządzenia"
+  },
+  "success": {
+    "created": "Pin został utworzony",
+    "updated": "Pin został zaktualizowany"
+  }
+}

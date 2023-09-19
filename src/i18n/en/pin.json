@@ -1,0 +1,11 @@
+{
+  "enums": {
+    "electrical_contact": {
+      "0": "Normally open",
+      "1": "Normally closed"
+    }
+  },
+  "errors": {
+    "bad_device_type": "No pins available"
+  }
+}

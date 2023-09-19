@@ -18,6 +18,7 @@ import { Request } from 'express';
 import { CreateDeviceDto } from './dtos/create-device.dto';
 import { I18n, I18nContext, I18nService } from 'nestjs-i18n';
 import { ResponseInterface } from '../shared/types/response.interface';
+import { EnumsResponse } from '../shared/types/enums';
 
 @Controller('device')
 export class DeviceController {
@@ -25,6 +26,11 @@ export class DeviceController {
     private deviceService: DeviceService,
     private i18nService: I18nService,
   ) {}
+
+  @Get('enums')
+  getEnums(): ResponseInterface<EnumsResponse> {
+    return this.deviceService.getEnums();
+  }
 
   @Get(':id')
   findDevice(
@@ -35,7 +41,7 @@ export class DeviceController {
   }
 
   @Get()
-  getDevices(@CurrentUser() user: User): Promise<Device[]> {
+  getDevices(@CurrentUser() user: User): Promise<ResponseInterface<Device[]>> {
     return this.deviceService.getUserDevices(user);
   }
 
@@ -44,14 +50,11 @@ export class DeviceController {
   async update(
     @Param('id') id: string,
     @Body() body: { device: Partial<Device> },
-    @I18n() i18n: I18nContext,
   ): Promise<ResponseInterface> {
-    await this.deviceService.update(id, body.device, i18n.lang);
+    await this.deviceService.update(id, body.device);
 
     return {
-      message: this.i18nService.translate('response-msg.success.update', {
-        lang: i18n.lang,
-      }),
+      message: this.i18nService.translate('response-msg.success.updated'),
       statusCode: HttpStatus.OK,
       data: null,
     };
@@ -71,9 +74,8 @@ export class DeviceController {
   registerDevice(
     @Body() { id }: DeviceCredentialsInterface,
     @Req() request: Request,
-    @I18n() i18n: I18nContext,
   ) {
     const address = `${request.ip}:${request.socket.remotePort}`;
-    return this.deviceService.registerDevice({ id, address, lang: i18n.lang });
+    return this.deviceService.registerDevice({ id, address });
   }
 }

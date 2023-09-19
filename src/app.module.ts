@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigService, ConfigModule } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 
 import { AppController } from './app.controller';
@@ -12,7 +11,8 @@ import { DatabaseProviderModule } from './database/database-provider.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as path from 'path';
-import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
+import {AcceptLanguageResolver, I18nModule} from 'nestjs-i18n';
+import { PinModule } from './pin/pin.module';
 
 @Module({
   imports: [
@@ -33,6 +33,7 @@ import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
     AuthModule,
     DeviceModule,
     TasksModule,
+    PinModule,
   ],
   controllers: [AppController],
   providers: [

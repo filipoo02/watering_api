@@ -1,5 +1,6 @@
 import { User } from 'src/auth/users/user.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Pin} from '../pin/pin.entity';
 
 @Entity()
 export class Device {
@@ -24,9 +25,18 @@ export class Device {
   })
   users: User[];
 
+  @OneToMany((type) => Pin, (type) => type.device, { nullable: true })
+  pins: Pin[];
+
   @Column()
   createdAt: string;
 
   @Column({ nullable: true })
   updatedAt: string;
+
+  @Column({ nullable: true })
+  lastConfigurationDate: string;
+
+  @Column({ nullable: true })
+  lastSetupDate: string;
 }

@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { I18nService } from 'nestjs-i18n';
+import {I18nService} from 'nestjs-i18n';
 
 import { UsersService } from 'src/auth/users/users.service';
 import { JwtPayloadInterface } from './types/jwt-payload.interface';
@@ -56,14 +56,11 @@ export class AuthService {
   async singup(
     email: string,
     password: string,
-    lang: string,
   ): Promise<AuthCredentialsInterface> {
     const users = await this.usersService.find(email);
 
     if (users.length) {
-      throw new BadRequestException(
-        this.i18n.translate('auth.errors.email_in_use', { lang }),
-      );
+      throw new BadRequestException(this.i18n.translate('auth.errors.email_in_use'));
     }
 
     const hashedPassword = await this.hashData(password);

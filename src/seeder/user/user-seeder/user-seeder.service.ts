@@ -21,7 +21,7 @@ export class UserSeederService extends SeederAbstractService {
         const lastOne = i === arr.length - 1;
 
         this.authService
-          .singup(u.email, u.password, 'en')
+          .singup(u.email, u.password)
           .then(() => {
             console.log(
               '\x1b[32m [SEEDER] User added to the database. \x1b[0m',

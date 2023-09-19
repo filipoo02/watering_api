@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { I18n, I18nContext } from 'nestjs-i18n';
+import {I18n, I18nContext} from 'nestjs-i18n';
 
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
@@ -29,9 +29,8 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   signup(
     @Body() body: AuthCredentialsDto,
-    @I18n() i18n: I18nContext,
   ): Promise<AuthCredentialsInterface> {
-    return this.authService.singup(body.email, body.password, i18n.lang);
+    return this.authService.singup(body.email, body.password);
   }
 
   @Public()
